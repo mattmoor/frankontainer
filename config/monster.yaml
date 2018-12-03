@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: monster-army
+spec:  
+  selector:
+    matchLabels:
+      name: frankontainers-monster
+  template:
+    metadata:
+      labels:
+        name: frankontainers-monster
+    spec:
+      containers:
+      - name: the-monster
+        image: 127.0.0.1:32100/monster:latest
+        # TODO(mattmoor): Add a trivial resource block.

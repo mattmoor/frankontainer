@@ -1,0 +1,49 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: frankontainer
+spec:
+  selector:
+    app: frankontainer
+  ports:
+  - protocol: TCP
+    nodePort: 32100
+    port: 1234
+    targetPort: 8080
+  type: NodePort
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: recipe
+data:
+  # These are purely illustrative
+  # TODO(mattmoor): Use values that can hold auth info.
+  7ca138d6a03ad188efdd8844d37236ac4620b37d96a987bb03e7188f1531a457: "gcr.io/gcp-runtimes/ftl_node_8_5_0_ubuntu_16_0_4_build@sha256:a0eeeabd173d9d087669cbb4ad4dd223a9ace97703c12baa0dbe099591f29cb5"
+  011bed8d7f0545a4c0d92e307e697efab6b00ed9b79692c3af222d5f5e831ded: "gcr.io/gcp-runtimes/ftl_node_8_5_0_ubuntu_16_0_4_build@sha256:1f06f9c697ef5abb0a89730b4b950c1c72d4555c6f91889636608145718e0cf3"
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: frankontainer
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: frankontainer
+    spec:
+      containers:
+      - name: the-doctor
+        image: github.com/mattmoor/frankontainer/cmd/doctor
+        # The image ko turns this into will form the 
+        args: ["-image", "github.com/mattmoor/frankontainer/cmd/monster"]
+        ports:
+          - containerPort: 8080
+        volumeMounts:
+        - name: recipe
+          mountPath: /etc/recipe
+      volumes:
+        - name: recipe
+          configMap:
+            name: recipe
